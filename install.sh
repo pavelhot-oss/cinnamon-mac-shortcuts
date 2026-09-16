@@ -20,18 +20,18 @@ if [ "${SKIP_DEPS:-0}" != "1" ]; then
         SUDO="sudo"
     fi
     case "${MAC_PKGMGR:-}" in
-        apt)   $SUDO apt-get install -y xdotool xclip ;;
-        pacman) $SUDO pacman -S --noconfirm xdotool xclip ;;
-        dnf)   $SUDO dnf install -y xdotool xclip ;;
+        apt)   $SUDO apt-get install -y xdotool xclip xbindkeys ;;
+        pacman) $SUDO pacman -S --noconfirm xdotool xclip xbindkeys ;;
+        dnf)   $SUDO dnf install -y xdotool xclip xbindkeys ;;
         "")
             if command -v apt-get >/dev/null; then
-                $SUDO apt-get install -y xdotool xclip
+                $SUDO apt-get install -y xdotool xclip xbindkeys
             elif command -v pacman >/dev/null; then
-                $SUDO pacman -S --noconfirm xdotool xclip
+                $SUDO pacman -S --noconfirm xdotool xclip xbindkeys
             elif command -v dnf >/dev/null; then
-                $SUDO dnf install -y xdotool xclip
+                $SUDO dnf install -y xdotool xclip xbindkeys
             else
-                warn "unknown package manager — install 'xdotool' and 'xclip' manually"
+                warn "unknown package manager — install 'xdotool', 'xclip' and 'xbindkeys' manually"
             fi
             ;;
     esac
@@ -46,12 +46,44 @@ if ! gsettings list-schemas 2>/dev/null | grep -q org.cinnamon; then
 fi
 
 # --- install scripts ----------------------------------------------------
+TS="$(date +%s)"
 mkdir -p "$PREFIX"
 for f in cmd-xlate setup-mac-shortcuts.sh backup-cm.sh restore-cm.sh zsh/mac-clipboard.zsh; do
     cp "$HERE/$f" "$PREFIX/$(basename "$f")"
     chmod +x "$PREFIX/$(basename "$f")"
 done
 log "installed scripts into $PREFIX"
+
+# --- thumb-button tab switching (xbindkeys) -----------------------------
+if [ -f "$HERE/xbindkeysrc" ]; then
+    if [ -f "$HOME/.xbindkeysrc" ]; then
+        cp "$HOME/.xbindkeysrc" "$HOME/.xbindkeysrc.bak.$TS"
+    fi
+    cp "$HERE/xbindkeysrc" "$HOME/.xbindkeysrc"
+    log "installed ~/.xbindkeysrc (thumb buttons: b:8 -> Ctrl+Tab, b:9 -> Ctrl+Shift+Tab)"
+    XBIN=$(command -v xbindkeys || true)
+    if [ -n "$XBIN" ]; then
+        mkdir -p "$HOME/.config/autostart"
+        cat > "$HOME/.config/autostart/xbindkeys.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=xbindkeys (thumb-button tab switch)
+Comment=Map thumb buttons to Ctrl+Tab / Ctrl+Shift+Tab
+Exec=$XBIN
+Terminal=false
+X-GNOME-Autostart-enabled=true
+X-Cinnamon-Autostart-enabled=true
+EOF
+        log "added autostart entry for xbindkeys"
+        if [ -n "${DISPLAY:-}" ]; then
+            pkill -x xbindkeys 2>/dev/null || true
+            setsid nohup "$XBIN" >/tmp/xbindkeys.log 2>&1 & disown
+            log "xbindkeys started (thumb buttons active now)"
+        fi
+    else
+        warn "xbindkeys not installed — skipping thumb-button config"
+    fi
+fi
 
 # --- register shortcuts with Cinnamon -----------------------------------
 "$PREFIX/setup-mac-shortcuts.sh"
@@ -77,4 +109,5 @@ log "done. Open a NEW terminal; global shortcuts activate after a Cinnamon resta
 echo
 echo "  modifier : $MOD    (change with MAC_MOD=Super)"
 echo "  prefix   : $PREFIX (change with MAC_PREFIX=/usr/local/bin)"
+echo "  thumbs   : ~/.xbindkeysrc (b:8 -> Ctrl+Tab, b:9 -> Ctrl+Shift+Tab)"
 echo "  rescue   : $PREFIX/restore-cm.sh --rescue   (if Cinnamon ever fails to boot)"

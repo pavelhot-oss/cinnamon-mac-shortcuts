@@ -30,6 +30,21 @@ else
     gsettings set org.cinnamon.desktop.keybindings custom-list "[${fmt#, }]"
 fi
 
+# --- remove thumb-button bindings (xbindkeys) ---------------------------
+pkill -x xbindkeys 2>/dev/null && log "stopped xbindkeys"
+rm -f "$HOME/.config/autostart/xbindkeys.desktop"
+restored=0
+for b in "$HOME"/.xbindkeysrc.bak.*; do
+    [ -e "$b" ] || continue
+    mv "$b" "$HOME/.xbindkeysrc"
+    log "restored previous ~/.xbindkeysrc"
+    restored=1
+done
+if [ "$restored" -eq 0 ] && [ -f "$HOME/.xbindkeysrc" ] && grep -q 'ctrl+Tab' "$HOME/.xbindkeysrc"; then
+    rm -f "$HOME/.xbindkeysrc"
+    log "removed our ~/.xbindkeysrc"
+fi
+
 # --- strip zsh integration line ------------------------------------------
 if [ -f "$HOME/.zshrc" ]; then
     sed -i '/mac-clipboard.zsh/d; /mac-style clipboard (cinnamon-mac-shortcuts)/d' "$HOME/.zshrc"

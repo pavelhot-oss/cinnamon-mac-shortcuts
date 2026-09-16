@@ -1,0 +1,10 @@
+# ~/.xbindkeysrc — Logitech thumb buttons -> tab switching (mac style).
+#   b:8  (BTN_SIDE,  evdev 275, thumb-back)  -> Ctrl+Tab        next tab
+#   b:9  (BTN_EXTRA, evdev 276, thumb-fwd)   -> Ctrl+Shift+Tab  previous tab
+# If your buttons feel reversed, swap b:8 <-> b:9 below.
+
+"/usr/bin/xdotool key --clearmodifiers ctrl+Tab"
+    b:8
+
+"/usr/bin/xdotool key --clearmodifiers ctrl+shift+Tab"
+    b:9

@@ -22,6 +22,7 @@ In terminals it special-cases `gnome-terminal`/`kitty`/etc. so `Alt+C/V/A` send 
 
 - Cinnamon desktop on **X11** (the dispatcher relies on X grabs + `xdotool`)
 - `xdotool`, `xclip` (installed automatically by `install.sh` on apt/pacman/dnf)
+- optional: `xbindkeys` for thumb-button tab switching (also installed automatically)
 - optional: `zsh` for the line-editor bindings
 
 ## Install
@@ -47,6 +48,17 @@ Shortcut table (`Alt=Cmd` unless `MAC_MOD=Super`):
 | `Alt ,` | Preferences | | |
 
 `Alt+Tab`, `Alt+F4`, `Alt+F2` and other window-manager combos are untouched.
+
+## Thumb-button tab switching
+
+A second set of bindings maps the two Logitech thumb side-buttons (`BTN_SIDE` / `BTN_EXTRA`) to `Ctrl+Tab` / `Ctrl+Shift+Tab` globally via `xbindkeys` — the X11 equivalent of `mouse:275` / `mouse:276` in the Hyprland/omarchy version:
+
+| Mouse button | X code | Evdev code | Sends |
+|---|---|---|---|
+| Thumb-back (`BTN_SIDE`) | `b:8` | `275` | `Ctrl+Tab` (next tab) |
+| Thumb-fwd (`BTN_EXTRA`) | `b:9` | `276` | `Ctrl+Shift+Tab` (previous tab) |
+
+Config lives in `~/.xbindkeysrc`; autostart file in `~/.config/autostart/xbindkeys.desktop`. If the buttons feel reversed, swap `b:8` ↔ `b:9` in the config.
 
 ## Configuration (env vars)
 

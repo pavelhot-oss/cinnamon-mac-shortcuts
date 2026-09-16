@@ -20,7 +20,7 @@ else
     echo "(no monitors.xml)" > "$DIR/monitors.xml"
 fi
 
-for f in "$HOME/.zshrc" "$PREFIX/cmd-xlate" "$PREFIX/setup-mac-shortcuts.sh"; do
+for f in "$HOME/.zshrc" "$PREFIX/cmd-xlate" "$PREFIX/setup-mac-shortcuts.sh" "$HOME/.xbindkeysrc" "$HOME/.config/autostart/xbindkeys.desktop"; do
     if [ -f "$f" ]; then
         cp "$f" "$DIR/scripts/"
         echo "included: ${f#$HOME/}"

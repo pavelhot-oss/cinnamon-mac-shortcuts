@@ -73,6 +73,11 @@ for f in "$DIR"/scripts/*; do
         .zshrc) dest="$HOME/.zshrc" ;;
         cmd-xlate) dest="$PREFIX/cmd-xlate" ;;
         setup-mac-shortcuts.sh) dest="$PREFIX/setup-mac-shortcuts.sh" ;;
+        xbindkeysrc) dest="$HOME/.xbindkeysrc" ;;
+        xbindkeys.desktop)
+            mkdir -p "$HOME/.config/autostart"
+            dest="$HOME/.config/autostart/xbindkeys.desktop"
+            ;;
         *) continue ;;
     esac
     apply "$dest" bash -c "cp '$f' '$dest'; chmod +x '$dest'"
