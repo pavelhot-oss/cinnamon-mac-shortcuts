@@ -1,0 +1,10 @@
+# Never commit personal config-state snapshots
+cm-backups/
+snapshots/
+*.dconf
+monitors.xml
+config/
+
+# Editor / OS junk
+*.swp
+.DS_Store

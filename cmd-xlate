@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# CmdXlate: translate Mac-style modifier+<key> into the focused app's real shortcut.
+# <MOD> defaults to Alt (see setup-mac-shortcuts.sh). Receives an action name as $1.
+
+action=${1:-}
+send() { xdotool key --clearmodifiers "$@" >/dev/null 2>&1 || true; }
+
+# Which focused windows are treated as terminals (use Ctrl+Shift+<key> there).
+# Override with MAC_TERMINALS_GLOB, e.g.:  MAC_TERMINALS_GLOB='*gnome-terminal*|*kitty*'
+TERM_PAT="${MAC_TERMINALS_GLOB:-*gnome-terminal*|*org.gnome.terminal*|*xterm*|*konsole*|*xfce4-terminal*|*terminator*|*alacritty*|*kitty*|*tilix*}"
+
+term() {
+    local wid cls
+    wid=$(xdotool getactivewindow 2>/dev/null) || return 1
+    cls=$(xprop -id "$wid" WM_CLASS 2>/dev/null) || cls=""
+    case "${cls,,}" in
+        $TERM_PAT) return 0 ;;
+    esac
+    return 1
+}
+
+if [[ -z $action ]]; then exit 0; fi
+
+# Terminal apps: use Ctrl+Shift+<key> (their real copy/paste/select-all). Never send
+# plain Ctrl+combos here (Ctrl+S/ctrl+C etc. are shell control chars).
+if term; then
+    case "$action" in
+        copy)         send "ctrl+shift+c" ;;
+        paste|paste-plain) send "ctrl+shift+v" ;;
+        select-all)   send "ctrl+shift+a" ;;
+        cut)          : ;;
+    esac
+    exit 0
+fi
+
+case "$action" in
+    copy)         send "ctrl+c" ;;
+    paste)        send "ctrl+v" ;;
+    paste-plain)  send "ctrl+shift+v" ;;
+    cut)          send "ctrl+x" ;;
+    select-all)   send "ctrl+a" ;;
+    undo)         send "ctrl+z" ;;
+    redo)         send "ctrl+shift+z" ;;
+    find)         send "ctrl+f" ;;
+    find-next)    send "ctrl+g" ;;
+    save)         send "ctrl+s" ;;
+    close)        send "ctrl+w" ;;
+    close-all)    send "ctrl+shift+w" ;;
+    new-tab)      send "ctrl+t" ;;
+    new-window)   send "ctrl+n" ;;
+    quit)         send "ctrl+q" ;;
+    print)        send "ctrl+p" ;;
+    reload)       send "ctrl+r" ;;
+    line-start)   send "Home" ;;
+    line-end)     send "End" ;;
+    page-top)     send "ctrl+Home" ;;
+    page-bottom)  send "ctrl+End" ;;
+    pref)         send "ctrl+comma" ;;
+    tab-[1-9])    send "ctrl+${action#tab-}" ;;
+esac
+exit 0
